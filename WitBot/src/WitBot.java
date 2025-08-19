@@ -33,6 +33,7 @@ public class WitBot {
 //        echos user's input
         Scanner sc = new Scanner(System.in);
         String echo_word = "";
+//        array with class type
         ArrayList<Task> todo_list = new ArrayList<>();
         int task_index = 0;
 
@@ -42,10 +43,12 @@ public class WitBot {
             if (echo_word.equals("bye")) {
                 break;
             } else if (echo_word.isEmpty()) {
+//                empty input check
                 System.out.println("Oops! You've gotta input something~");
                 System.out.println(tab);
                 continue;
             } else if (echo_word.startsWith("mark") || echo_word.startsWith("unmark")){
+//                ensuring args == 2
                 if (echo_word.split(" ").length == 1) {
                     System.out.println(tab);
                     System.out.println("What are you even referring to? Add an index!");
@@ -62,6 +65,7 @@ public class WitBot {
                 task_index = parseInt(echo_word.split(" ")[1]) - 1;
 
                 if (echo_word.startsWith("mark")) {
+//                    duplicate mark check
                     if (todo_list.get(task_index).isDone) {
                         System.out.println("You've already finished this silly!");
                         System.out.println(tab);
@@ -72,6 +76,7 @@ public class WitBot {
                         System.out.println(tab);
                     }
                 } else {
+//                    duplicate unmark check
                     if (!todo_list.get(task_index).isDone) {
                         System.out.println("I see... Trying to run away from responsibilities? It's already unmarked...");
                         System.out.println(tab);
