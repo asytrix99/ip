@@ -3,30 +3,16 @@ import static java.lang.Integer.parseInt;
 
 public class WitBot {
 
-//    using class to represent object (recommended by textbook)
-    public static class Task {
-        protected String description;
-        protected boolean isDone;
-
-        public Task(String description) {
-            this.description = description;
-            this.isDone = false;
-        }
-
-        public String getStatusIcon() {
-            return (isDone ? "X" : " ");
-        }
-
-        public void print_taskrow(String description) {
-            System.out.println("       [" + getStatusIcon() + "] " + description);
-        }
-    }
-
     public static void main(String[] args) {
 //        greeting user
         String tab = "\t____________________________________________________________";
         System.out.println(tab);
-        System.out.println("\tHey there human (I hope you are...)! I'm WitBot - your unconventionally helpful sidekick!");
+		String logo = "       __          ___   _      \n" +
+				"       \\ \\        / / | (_) |_   \n" +
+				"        \\ \\  /\\  / /  | | | __|  \n" +
+				"         \\ \\/  \\/ /   | | | |_   \n" +
+				"          \\__/\\__/    |_|  \\__|  \n";
+        System.out.println("\tHey there human (I hope you are...)! I'm WitBot - your unconventionally helpful sidekick!" + logo);
         System.out.println("\tWhat idea, plan or meme do you have on mind today?");
         System.out.println(tab);
 
@@ -86,7 +72,7 @@ public class WitBot {
                         todo_list.get(task_index).isDone = false;
                     }
                 }
-                todo_list.get(task_index).print_taskrow(todo_list.get(task_index).description);
+                todo_list.get(task_index).print_taskbar(todo_list.get(task_index).description);
                 System.out.println(tab);
             } else if (echo_word.equals("list")) {
                 //            listing current tasks
