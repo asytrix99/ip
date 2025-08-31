@@ -1,3 +1,5 @@
+package main.java;
+
 public class Task {
 	//    using class to represent object (recommended by textbook)
 	protected String description;
@@ -12,7 +14,8 @@ public class Task {
 		return (isDone ? "X" : " ");
 	}
 
-	public void print_taskbar(String description) {
-		System.out.println("       [" + getStatusIcon() + "] " + description);
+	public String toString() {
+		return "[" + getStatusIcon() + "] " + description;
 	}
 }
+
