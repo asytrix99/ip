@@ -1,6 +1,7 @@
 package main.java;
 
 import java.util.ArrayList;
+import java.util.Scanner;
 import static java.lang.Integer.parseInt;
 
 public class ZeusBot {
@@ -10,6 +11,30 @@ public class ZeusBot {
 	public static final String MSG_BYE = "\tAwh... so fast? Alright then, hope to see you again soon!";
 	public static final String MSG_DUPLICATE_MARK = "\tYou've already finished this silly!";
 	public static final String MSG_DUPLICATE_UNMARK = "\tAh! That's amazing, you've got another one crossed out~";
+
+	public static void main(String[] args) {
+		ZeusBot.greetUser();
+
+		Scanner sc = new Scanner(System.in);
+		String echo_word = "";
+		ArrayList<Task> todo_list = new ArrayList<>(); //array with class type
+
+		while (true) {
+			echo_word = sc.nextLine();
+			if (echo_word.equals("bye")) {
+				break;
+			} else if (echo_word.isEmpty()) {
+				ZeusBot.warnEmptyInput(); //check empty input
+			} else if (echo_word.startsWith("mark") || echo_word.startsWith("unmark")) {
+				ZeusBot.handleMarking(echo_word, todo_list); //ensure num args == 2
+			} else if (echo_word.equals("list")) {
+				ZeusBot.listTasks(todo_list); //list current tasks
+			} else
+				ZeusBot.addTask(echo_word, todo_list); //add task to list
+		}
+
+		ZeusBot.byeUser(); //says bye to user
+	}
 
 	private static void tab() {
 		System.out.println("\t____________________________________________________________");
