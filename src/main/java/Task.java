@@ -1,7 +1,4 @@
-package main.java;
-
 public class Task {
-	//    using class to represent object (recommended by textbook)
 	protected String description;
 	protected boolean isDone;
 
