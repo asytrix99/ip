@@ -28,6 +28,7 @@ public class ZeusBot {
 				return;
 			// Checks for empty input
 			case "":
+				ZeusBot.warnEmptyInput();
 				continue;
 			case "mark":
 			case "unmark":
