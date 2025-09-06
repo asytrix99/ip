@@ -1,1 +1,17 @@
 todo borrow book
+list
+mark 1
+mark 1
+unmark 1
+list
+event CS2113 exam /from Mon 5pm /to Tues 9pm
+list
+mark 2
+mark 1
+list
+deadline do assignment /by 5pm today
+list
+mark 3
+list
+mark 2
+bye

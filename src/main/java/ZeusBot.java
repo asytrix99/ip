@@ -22,7 +22,7 @@ public class ZeusBot {
 
 		while (true) {
 			String echo_word = sc.nextLine();
-			switch (echo_word) {
+			switch (echo_word.split(" ")[0]) {
 			case "bye":
 				ZeusBot.byeUser();
 				return;
@@ -33,8 +33,10 @@ public class ZeusBot {
 			case "mark":
 			case "unmark":
 				ZeusBot.handleMarking(echo_word, todo_list);
+				break;
 			case "list":
 				ZeusBot.listTasks(todo_list);
+				break;
 			default:
 				ZeusBot.addTask(echo_word, todo_list);
 			}
@@ -210,7 +212,7 @@ public class ZeusBot {
 	private static boolean checkCorrectNumArgs(String echo_word) {
 		if (echo_word.split(" ").length == 1) {
 			tab();
-			System.out.println("What are you even referring to? Add an index!");
+			System.out.println(INDENT +"What are you even referring to? Add an index!");
 			tab();
 			return true;
 		} else if (echo_word.split(" ").length > 2) {
