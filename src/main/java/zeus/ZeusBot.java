@@ -1,3 +1,10 @@
+package zeus;
+
+import zeus.tasks.Task;
+import zeus.tasks.Deadline;
+import zeus.tasks.Todo;
+import zeus.tasks.Event;
+
 import java.util.ArrayList;
 import java.util.Scanner;
 import static java.lang.Integer.parseInt;
