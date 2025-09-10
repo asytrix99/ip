@@ -1,5 +1,8 @@
 package zeus;
 
+import zeus.exceptions.DuplicateMarkingException;
+import zeus.exceptions.EmptyListException;
+import zeus.exceptions.NumArgsException;
 import zeus.tasks.Task;
 import zeus.tasks.Deadline;
 import zeus.tasks.Todo;
@@ -16,7 +19,13 @@ public class ZeusBot {
 	public static final String MSG_EMPTY_INPUT = INDENT + "Oops! You've gotta input something~";
 	public static final String MSG_BYE = INDENT + "Awh... so fast? Alright then, hope to see you again soon!";
 	public static final String MSG_DUPLICATE_MARK = INDENT + "You've already finished this silly!";
-	public static final String MSG_DUPLICATE_UNMARK = INDENT + "Ah! That's amazing, you've got another one crossed out~";
+	public static final String MSG_MARK = INDENT + "Ah! That's amazing, you've got another one crossed out~";
+	public static final String MSG_DUPLICATE_UNMARK = "I see... Trying to run away from responsibilities? It's already unmarked...";
+	public static final String MSG_UNMARK = "Awh, it's alright, you can work on this next time. Keep up!";
+	public static final String EMPTY_LIST_PROMPT = "You're free for the day!";
+	public static final String OUT_OF_BOUNDS_PROMPT = "Your query is too large for your current list :/";
+	public static final String MISSING_INDEX_PROMPT = "What are you even referring to? Add an index!";
+	public static final String EXCESSIVE_INPUT_ARGS_PROMPT = "One task at a time my friend! Input only one digit~";
 
 	public static void main(String[] args) {
 		ZeusBot.greetUser();
@@ -31,11 +40,12 @@ public class ZeusBot {
 			String echo_word = sc.nextLine();
 			switch (echo_word.split(" ")[0]) {
 			case "bye":
-				ZeusBot.byeUser();
+				ZeusBot.sayByeToUser();
 				return;
 			// Checks for empty input
 			case "":
-				ZeusBot.warnEmptyInput();
+				System.out.println(MSG_EMPTY_INPUT);
+				tab();
 				continue;
 			case "mark":
 			case "unmark":
@@ -55,30 +65,43 @@ public class ZeusBot {
 	}
 
 	public static void listTasks(ArrayList<Task> todo_list) {
-		tab();
-		checkEmptyList(todo_list);
-		printList(todo_list);
-		tab();
+		try {
+			tab();
+			checkEmptyList(todo_list);
+			printList(todo_list);
+			tab();
+		} catch (EmptyListException e) {
+			System.out.println(MSG_EMPTY_INPUT);
+		}
 	}
 
 	public static void handleMarking(String echo_word, ArrayList<Task> todo_list) {
-		int task_index;
-		// Ensures number of args == 2
-		if (checkCorrectNumArgs(echo_word)) {
-			return;
-		}
-		task_index = getTaskIndex(echo_word);
+		try {
+			// Ensures number of args == 2
+			checkCorrectNumArgs(echo_word);
 
-		if (checkDuplicate(echo_word, todo_list, task_index)) {
-			return;
+			// Catches if user tries to mark/unmark an empty list
+			checkEmptyList(todo_list);
+
+			int task_index = getTaskIndex(echo_word);
+
+			//  Catches if user inputs index out of bounds
+			checkOutOfBounds(todo_list, task_index);
+
+			checkDuplicate(echo_word, todo_list, task_index);
+
+			printTaskBar(todo_list, task_index);
+			tab();
+		} catch (NumArgsException | DuplicateMarkingException | EmptyListException | IndexOutOfBoundsException e) {
+			System.out.println(e.getMessage());
+			tab();
 		}
-		printTaskBar(todo_list, task_index);
-		tab();
 	}
 
-	public static void warnEmptyInput() {
-		System.out.println(MSG_EMPTY_INPUT);
-		tab();
+	private static void checkOutOfBounds(ArrayList<Task> todoList, int task_index) {
+		if (todoList.size() < task_index + 1) {
+			throw new IndexOutOfBoundsException(INDENT + OUT_OF_BOUNDS_PROMPT);
+		}
 	}
 
 	protected static void greetUser() {
@@ -118,12 +141,12 @@ public class ZeusBot {
 		tab();
 	}
 
-	private static boolean checkDuplicate(String echo_word, ArrayList<Task> todo_list, int task_index) {
-		// Checking for duplicate marking/unmarking
+	private static void checkDuplicate(String echo_word, ArrayList<Task> todo_list, int task_index) throws DuplicateMarkingException {
+		// Checking for duplicate marking or unmarking
 		if (echo_word.startsWith("mark")) {
-			return checkDuplicateMark(todo_list, task_index);
+			checkDuplicateMark(todo_list, task_index);
 		} else {
-			return checkDuplicateUnmark(todo_list, task_index);
+			checkDuplicateUnmark(todo_list, task_index);
 		}
 	}
 
@@ -164,7 +187,7 @@ public class ZeusBot {
 		tab();
 	}
 
-	public static void byeUser() {
+	public static void sayByeToUser() {
 		tab();
 		System.out.println(MSG_BYE);
 		tab();
@@ -179,9 +202,10 @@ public class ZeusBot {
 		}
 	}
 
-	private static void checkEmptyList(ArrayList<Task> todo_list) {
+	private static void checkEmptyList(ArrayList<Task> todo_list) throws EmptyListException {
 		if (todo_list.isEmpty()) {
-			System.out.println("Good on ya, you're free for the day!");
+			tab();
+			throw new EmptyListException(INDENT + EMPTY_LIST_PROMPT);
 		}
 	}
 
@@ -190,44 +214,33 @@ public class ZeusBot {
 		System.out.println(string);
 	}
 
-	private static boolean checkDuplicateUnmark(ArrayList<Task> todo_list, int task_index) {
+	private static void checkDuplicateUnmark(ArrayList<Task> todo_list, int task_index) throws DuplicateMarkingException {
 		if (!todo_list.get(task_index).isDone) {
-			System.out.println(INDENT + "I see... Trying to run away from responsibilities? It's already unmarked...");
-			tab();
-			return true;
+			throw new DuplicateMarkingException(INDENT + MSG_DUPLICATE_UNMARK);
 		} else {
-			System.out.println(INDENT + "Awh, it's alright, you can work on this next time. Keep up!");
+			System.out.println(INDENT + MSG_UNMARK);
 			todo_list.get(task_index).isDone = false;
 			tab();
 		}
-		return false;
 	}
 
-	private static boolean checkDuplicateMark(ArrayList<Task> todo_list, int task_index) {
+	private static void checkDuplicateMark(ArrayList<Task> todo_list, int task_index) throws DuplicateMarkingException {
 		if (todo_list.get(task_index).isDone) {
-			System.out.println(MSG_DUPLICATE_MARK);
-			tab();
-			return true;
+			throw new DuplicateMarkingException(INDENT + MSG_DUPLICATE_MARK);
 		} else {
-			System.out.println(MSG_DUPLICATE_UNMARK);
+			System.out.println(INDENT + MSG_MARK);
 			todo_list.get(task_index).isDone = true;
 			tab();
 		}
-		return false;
 	}
 
-	private static boolean checkCorrectNumArgs(String echo_word) {
+	private static void checkCorrectNumArgs(String echo_word) throws NumArgsException {
 		if (echo_word.split(" ").length == 1) {
 			tab();
-			System.out.println(INDENT +"What are you even referring to? Add an index!");
-			tab();
-			return true;
+			throw new NumArgsException(INDENT + MISSING_INDEX_PROMPT);
 		} else if (echo_word.split(" ").length > 2) {
 			tab();
-			System.out.println("One task at a time my friend! Input only one digit~");
-			tab();
-			return true;
+			throw new NumArgsException(INDENT + EXCESSIVE_INPUT_ARGS_PROMPT);
 		}
-		return false;
 	}
 }

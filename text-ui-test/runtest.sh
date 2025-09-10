@@ -13,7 +13,7 @@ then
 fi
 
 # compile the code into the bin folder, terminates if error occurred
-if ! javac -cp ../src/main/java -Xlint:none -d ../bin ../src/main/java/*.java
+if ! javac -cp ../src/main/java -Xlint:none -d ../bin ../src/main/java/zeus/ZeusBot.java ../src/main/java/zeus/tasks/*.java ../src/main/java/zeus/exceptions/*.java
 then
     echo "********** BUILD FAILURE **********"
     exit 1
