@@ -23,9 +23,10 @@ public class ZeusBot {
 	public static final String MSG_DUPLICATE_UNMARK = "I see... Trying to run away from responsibilities? It's already unmarked...";
 	public static final String MSG_UNMARK = "Awh, it's alright, you can work on this next time. Keep up!";
 	public static final String EMPTY_LIST_PROMPT = "You're free for the day!";
-	public static final String OUT_OF_BOUNDS_PROMPT = "Your query is too large for your current list :/";
+	public static final String OUT_OF_BOUNDS_TOO_BIG_PROMPT = "Your query is too LARGE for your current list :/";
 	public static final String MISSING_INDEX_PROMPT = "What are you even referring to? Add an index!";
 	public static final String EXCESSIVE_INPUT_ARGS_PROMPT = "One task at a time my friend! Input only one digit~";
+	public static final String OUT_OF_BOUNDS_TOO_SMALL_PROMPT = "Your query is too SMALL for your current list :/ ";
 
 	public static void main(String[] args) {
 		ZeusBot.greetUser();
@@ -51,6 +52,9 @@ public class ZeusBot {
 			case "unmark":
 				ZeusBot.handleMarking(echo_word, todo_list);
 				break;
+			case "delete":
+				ZeusBot.deleteTask(echo_word, todo_list);
+				break;
 			case "list":
 				ZeusBot.listTasks(todo_list);
 				break;
@@ -60,18 +64,40 @@ public class ZeusBot {
 		}
 	}
 
+	private static void deleteTask(String echo_word, ArrayList<Task> todo_list) {
+		try {
+			checkCorrectNumArgs(echo_word);
+			checkEmptyList(todo_list);
+
+			int task_index = Integer.parseInt(echo_word.split(" ")[1]) - 1;
+
+			checkOutOfBounds(todo_list, task_index);
+
+			tab();
+			System.out.println(INDENT + "Awh, sad to see your task go away :(");
+			System.out.println(INDENT + " " + todo_list.get(task_index));
+			todo_list.remove(task_index);
+			System.out.println(INDENT + "One less task... You have " + todo_list.size() + " tasks left!");
+			tab();
+		} catch (EmptyListException | NumArgsException | IndexOutOfBoundsException e) {
+			tab();
+			System.out.println(e.getMessage());
+			tab();
+		}
+	}
+
 	private static void tab() {
 		System.out.println(TAB);
 	}
 
 	public static void listTasks(ArrayList<Task> todo_list) {
 		try {
-			tab();
 			checkEmptyList(todo_list);
 			printList(todo_list);
 			tab();
 		} catch (EmptyListException e) {
 			System.out.println(MSG_EMPTY_INPUT);
+			tab();
 		}
 	}
 
@@ -93,14 +119,18 @@ public class ZeusBot {
 			printTaskBar(todo_list, task_index);
 			tab();
 		} catch (NumArgsException | DuplicateMarkingException | EmptyListException | IndexOutOfBoundsException e) {
+			tab();
 			System.out.println(e.getMessage());
 			tab();
 		}
 	}
 
 	private static void checkOutOfBounds(ArrayList<Task> todoList, int task_index) {
-		if (todoList.size() < task_index + 1) {
-			throw new IndexOutOfBoundsException(INDENT + OUT_OF_BOUNDS_PROMPT);
+		if (task_index < 0) {
+			throw new IndexOutOfBoundsException(INDENT + OUT_OF_BOUNDS_TOO_SMALL_PROMPT);
+		}
+		if (task_index >= todoList.size()) {
+			throw new IndexOutOfBoundsException(INDENT + OUT_OF_BOUNDS_TOO_BIG_PROMPT);
 		}
 	}
 
@@ -195,6 +225,7 @@ public class ZeusBot {
 
 	private static void printList(ArrayList<Task> todo_list) {
 		int counter = 1;
+		tab();
 		System.out.println(INDENT + "Here are the tasks in your list:");
 		for (Task task : todo_list) {
 			System.out.println(INDENT + counter + "." + task.toString());
@@ -204,7 +235,6 @@ public class ZeusBot {
 
 	private static void checkEmptyList(ArrayList<Task> todo_list) throws EmptyListException {
 		if (todo_list.isEmpty()) {
-			tab();
 			throw new EmptyListException(INDENT + EMPTY_LIST_PROMPT);
 		}
 	}
@@ -218,9 +248,9 @@ public class ZeusBot {
 		if (!todo_list.get(task_index).isDone) {
 			throw new DuplicateMarkingException(INDENT + MSG_DUPLICATE_UNMARK);
 		} else {
+			tab();
 			System.out.println(INDENT + MSG_UNMARK);
 			todo_list.get(task_index).isDone = false;
-			tab();
 		}
 	}
 
@@ -228,18 +258,16 @@ public class ZeusBot {
 		if (todo_list.get(task_index).isDone) {
 			throw new DuplicateMarkingException(INDENT + MSG_DUPLICATE_MARK);
 		} else {
+			tab();
 			System.out.println(INDENT + MSG_MARK);
 			todo_list.get(task_index).isDone = true;
-			tab();
 		}
 	}
 
 	private static void checkCorrectNumArgs(String echo_word) throws NumArgsException {
 		if (echo_word.split(" ").length == 1) {
-			tab();
 			throw new NumArgsException(INDENT + MISSING_INDEX_PROMPT);
 		} else if (echo_word.split(" ").length > 2) {
-			tab();
 			throw new NumArgsException(INDENT + EXCESSIVE_INPUT_ARGS_PROMPT);
 		}
 	}
