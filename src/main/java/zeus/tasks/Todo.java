@@ -9,4 +9,9 @@ public class Todo extends Task {
 	public String toString() {
 		return "\t\t[T]" + super.toString();
 	}
+
+	@Override
+	public String toSaveFormat() {
+		return "T | " + getStatusIconSave() + " | " + description;
+	}
 }

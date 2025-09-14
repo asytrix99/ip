@@ -8,6 +8,9 @@ import zeus.tasks.Deadline;
 import zeus.tasks.Todo;
 import zeus.tasks.Event;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 import static java.lang.Integer.parseInt;
@@ -24,9 +27,10 @@ public class ZeusBot {
 	public static final String MSG_UNMARK = "Awh, it's alright, you can work on this next time. Keep up!";
 	public static final String EMPTY_LIST_PROMPT = "You're free for the day!";
 	public static final String OUT_OF_BOUNDS_TOO_BIG_PROMPT = "Your query is too LARGE for your current list :/";
+	public static final String OUT_OF_BOUNDS_TOO_SMALL_PROMPT = "Your query is too SMALL for your current list :/ ";
 	public static final String MISSING_INDEX_PROMPT = "What are you even referring to? Add an index!";
 	public static final String EXCESSIVE_INPUT_ARGS_PROMPT = "One task at a time my friend! Input only one digit~";
-	public static final String OUT_OF_BOUNDS_TOO_SMALL_PROMPT = "Your query is too SMALL for your current list :/ ";
+	public static final String LIST_DATA_FILE_PATH = "./data/zeusbot.txt";
 
 	public static void main(String[] args) {
 		ZeusBot.greetUser();
@@ -35,7 +39,7 @@ public class ZeusBot {
 
 	private static void handleUserInput() {
 		Scanner sc = new Scanner(System.in);
-		ArrayList<Task> todo_list = new ArrayList<>();
+		ArrayList<Task> todo_list = loadTasks();
 
 		while (true) {
 			String echo_word = sc.nextLine();
@@ -60,6 +64,8 @@ public class ZeusBot {
 				break;
 			default:
 				ZeusBot.addTask(echo_word, todo_list);
+				// Persist saving input after every task addition
+				saveTasks(todo_list);
 			}
 		}
 	}
@@ -83,6 +89,82 @@ public class ZeusBot {
 			tab();
 			System.out.println(e.getMessage());
 			tab();
+		}
+	}
+	
+	private static ArrayList<Task> loadTasks() {
+		ArrayList<Task> tasks = new ArrayList<>();
+		try {
+			File file = new File(LIST_DATA_FILE_PATH);
+			if (!file.exists()) {
+				return tasks;
+			}
+
+			Scanner sc = new Scanner(file);
+
+			while (sc.hasNextLine()) {
+				String line = sc.nextLine();
+				Task t = parseTask(line);
+				if (t != null) {
+					tasks.add(t);
+				}
+			}
+			
+			sc.close();
+		} catch (IOException e) {
+			System.out.println("Error loading tasks: " + e.getMessage());
+		}
+		return tasks;
+	}
+
+	private static Task parseTask(String line) {
+		try {
+			// Do trimming due to spaces in between "|"
+			// E.g. T | 1 | read book
+			String[] seg = line.split("\\|");
+			String task_type = seg[0].trim();
+			boolean isDone = seg[1].trim().equals("1");
+
+			switch (task_type) {
+			case "T":
+				Task todo = new Todo(seg[2].trim());
+				todo.isDone = isDone;
+				return todo;
+			case "D":
+				Task deadline = new Deadline(seg[2].trim(), seg[3].trim());
+				deadline.isDone = isDone;
+				return deadline;
+			case "E":
+				Task event = new Event(seg[2].trim(), seg[3].trim(), seg[4].trim());
+				event.isDone = isDone;
+				return event;
+			}
+		} catch (Exception e) {
+			System.out.println("Ignoring corrupted line: " + line);
+			return null;
+		}
+		return null;
+	}
+
+	private static void saveTasks(ArrayList<Task> todo_list) {
+		try {
+			File dir = new File("./data");
+			if (!dir.exists()) {
+				// Checks if directory "./data" is present
+				if (!dir.mkdirs()) {
+					System.out.println("Failed to create directories: " + dir.getAbsolutePath());
+					return;
+				}
+			}
+
+			FileWriter fw = new FileWriter(LIST_DATA_FILE_PATH);
+			for (Task task : todo_list) {
+				// Write in line by line from ArrayList into data file, ensures persistence
+				fw.write(task.toSaveFormat() + System.lineSeparator());
+			}
+			fw.close();
+		} catch (IOException e) {
+			System.out.println("Error saving tasks: " + e.getMessage());
 		}
 	}
 
@@ -186,22 +268,22 @@ public class ZeusBot {
 
 	public static void addTask(String echo_word, ArrayList<Task> todo_list) {
 		tab();
-		String[] parts = echo_word.split(" ", 2);
-		String action = parts[0];
+		String[] seg = echo_word.split(" ", 2);
+		String action = seg[0];
 
 		Task t;
 
 		// Set task t subclass based on action
 		switch (action) {
 		case "todo":
-			t = new Todo(parts[1]);
+			t = new Todo(seg[1]);
 			break;
 		case "deadline":
-			String[] deadlineParts = parts[1].split(" /by ");
+			String[] deadlineParts = seg[1].split(" /by ");
 			t = new Deadline(deadlineParts[0], deadlineParts[1]);
 			break;
 		case "event":
-			String[] eventParts = parts[1].split("/from | /to");
+			String[] eventParts = seg[1].split(" /from | /to ");
 			t = new Event(eventParts[0], eventParts[1], eventParts[2]);
 			break;
 		default:
@@ -251,6 +333,9 @@ public class ZeusBot {
 			tab();
 			System.out.println(INDENT + MSG_UNMARK);
 			todo_list.get(task_index).isDone = false;
+			// Persist saving input after every task unmarking
+			saveTasks(todo_list);
+			tab();
 		}
 	}
 
@@ -261,6 +346,9 @@ public class ZeusBot {
 			tab();
 			System.out.println(INDENT + MSG_MARK);
 			todo_list.get(task_index).isDone = true;
+			// Persist saving input after every task marking
+			saveTasks(todo_list);
+			tab();
 		}
 	}
 
