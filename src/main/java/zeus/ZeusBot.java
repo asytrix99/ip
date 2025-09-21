@@ -1,362 +1,188 @@
-package zeus;
+	package zeus;
 
-import zeus.exceptions.DuplicateMarkingException;
-import zeus.exceptions.EmptyListException;
-import zeus.exceptions.NumArgsException;
-import zeus.tasks.Task;
-import zeus.tasks.Deadline;
-import zeus.tasks.Todo;
-import zeus.tasks.Event;
+	import zeus.ui.TextUi;
+	import zeus.tasklist.TaskList;
+	import zeus.storage.StorageFile;
+	import zeus.parser.Parser;
+	import zeus.exceptions.DuplicateMarkingException;
+	import zeus.exceptions.EmptyListException;
+	import zeus.exceptions.NumArgsException;
+	import zeus.tasks.Task;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Scanner;
-import static java.lang.Integer.parseInt;
+	public class ZeusBot {
 
-public class ZeusBot {
+		private static StorageFile storage;
+		private static TaskList todo_list;
+		private static TextUi ui;
 
-	public static final String INDENT = "\t";
-	public static final String TAB = INDENT + "____________________________________________________________";
-	public static final String MSG_EMPTY_INPUT = INDENT + "Oops! You've gotta input something~";
-	public static final String MSG_BYE = INDENT + "Awh... so fast? Alright then, hope to see you again soon!";
-	public static final String MSG_DUPLICATE_MARK = INDENT + "You've already finished this silly!";
-	public static final String MSG_MARK = INDENT + "Ah! That's amazing, you've got another one crossed out~";
-	public static final String MSG_DUPLICATE_UNMARK = "I see... Trying to run away from responsibilities? It's already unmarked...";
-	public static final String MSG_UNMARK = "Awh, it's alright, you can work on this next time. Keep up!";
-	public static final String EMPTY_LIST_PROMPT = "You're free for the day!";
-	public static final String OUT_OF_BOUNDS_TOO_BIG_PROMPT = "Your query is too LARGE for your current list :/";
-	public static final String OUT_OF_BOUNDS_TOO_SMALL_PROMPT = "Your query is too SMALL for your current list :/ ";
-	public static final String MISSING_INDEX_PROMPT = "What are you even referring to? Add an index!";
-	public static final String EXCESSIVE_INPUT_ARGS_PROMPT = "One task at a time my friend! Input only one digit~";
-	public static final String LIST_DATA_FILE_PATH = "./data/zeusbot.txt";
+		public ZeusBot(String filePath) {
+			ui = new TextUi();
+			storage = new StorageFile(filePath);
+			try {
+				todo_list = new TaskList(storage.loadTasks());
+			} catch (Exception e) {
+				ui.showExceptionError("Could not load tasks, empty list initiated.");
+				todo_list = new TaskList();
+			}
+		}
 
-	public static void main(String[] args) {
-		ZeusBot.greetUser();
-		handleUserInput();
-	}
+		public void run() {
+			ui.showGreeting();
+			while (true) {
+				try {
+					String input = ui.readCommand();
+					String command = Parser.getCommand(input);
 
-	private static void handleUserInput() {
-		Scanner sc = new Scanner(System.in);
-		ArrayList<Task> todo_list = loadTasks();
+					switch (command) {
+					case "":
+						ui.showEmptyInput();
+						break;
+					case "bye":
+						ui.showBye();
+						return;
+					case "mark":
+					case "unmark":
+						handleMarking(input);
+						break;
+					case "delete":
+						deleteTask(input);
+						break;
+					case "list":
+						listTasks();
+						break;
+					default:
+						addTask(input, command);
+						storage.saveTasks(todo_list.returnAllTasks());
+					}
+				} catch (Exception e) {
+					ui.showExceptionError(e.getMessage());
+				}
+			}
+		}
 
-		while (true) {
-			String echo_word = sc.nextLine();
-			switch (echo_word.split(" ")[0]) {
-			case "bye":
-				ZeusBot.sayByeToUser();
-				return;
-			// Checks for empty input
-			case "":
-				System.out.println(MSG_EMPTY_INPUT);
-				tab();
-				continue;
-			case "mark":
-			case "unmark":
-				ZeusBot.handleMarking(echo_word, todo_list);
+		public static void main(String[] args) {
+			new ZeusBot("./data/zeusbot.txt").run();
+		}
+
+		public static void deleteTask(String echo_word) {
+			try {
+				checkCorrectNumArgs(echo_word);
+				checkEmptyList();
+				int task_index = Parser.getTaskIndex(echo_word);
+				checkOutOfBounds(task_index);
+
+				ui.showTaskDeleted(todo_list.returnAllTasks(), task_index);
+				todo_list.deleteTask(task_index);
+				storage.saveTasks(todo_list.returnAllTasks());
+			} catch (EmptyListException | NumArgsException | IndexOutOfBoundsException e) {
+				ui.showExceptionError(e.getMessage());
+			}
+		}
+
+		public static void listTasks() {
+			try {
+				checkEmptyList();
+				ui.printList(todo_list.returnAllTasks());
+				ui.showLine();
+			} catch (EmptyListException e) {
+				ui.showExceptionError(e.getMessage());
+			}
+		}
+
+		public static void handleMarking(String echo_word) {
+			try {
+				// Ensures number of args == 2
+				checkCorrectNumArgs(echo_word);
+				// Catches if user tries to mark/unmark an empty list
+				checkEmptyList();
+				int task_index = Parser.getTaskIndex(echo_word);
+				//  Catches if user inputs index out of bounds
+				checkOutOfBounds(task_index);
+				checkDuplicate(echo_word, task_index);
+				ui.printTaskBar(todo_list.returnAllTasks(), task_index);
+				ui.showLine();
+			} catch (NumArgsException | DuplicateMarkingException | EmptyListException | IndexOutOfBoundsException e) {
+				ui.showExceptionError(e.getMessage());
+			}
+		}
+
+		private static void checkOutOfBounds(int task_index) {
+			if (task_index < 0) {
+				throw new IndexOutOfBoundsException(ui.outOfBoundsInputErrorTooSmall());
+			}
+			if (task_index >= todo_list.size()) {
+				throw new IndexOutOfBoundsException(ui.outOfBoundsInputErrorTooBig());
+			}
+		}
+
+		private static void checkDuplicate(String echo_word, int task_index) throws DuplicateMarkingException {
+			// Checking for duplicate marking or unmarking
+			if (echo_word.startsWith("mark")) {
+				checkDuplicateMark(task_index);
+			} else {
+				checkDuplicateUnmark(task_index);
+			}
+		}
+
+		public static void addTask(String echo_word, String command) {
+			ui.showLine();
+			Task t;
+			// Set task t subclass based on action
+			switch (command) {
+			case "todo":
+				t = todo_list.addTodo(Parser.getTodoDescription(echo_word));
 				break;
-			case "delete":
-				ZeusBot.deleteTask(echo_word, todo_list);
+			case "deadline":
+				String[] deadlineParts = Parser.getDeadlineParts(echo_word);
+				t = todo_list.addDeadline(deadlineParts[0], deadlineParts[1]);
 				break;
-			case "list":
-				ZeusBot.listTasks(todo_list);
+			case "event":
+				String [] eventParts = Parser.getEventParts(echo_word);
+				t = todo_list.addEvent(eventParts[0], eventParts[1], eventParts[2]);
 				break;
 			default:
-				ZeusBot.addTask(echo_word, todo_list);
-				// Persist saving input after every task addition
-				saveTasks(todo_list);
+				ui.showInvalidCommand();
+				return;
+			}
+
+			ui.showTaskAdded(t, todo_list.size());
+		}
+
+		private static void checkEmptyList() throws EmptyListException {
+			if (todo_list.isEmpty()) {
+				throw new EmptyListException(ui.emptyInputError());
+			}
+		}
+
+		private static void checkDuplicateUnmark(int task_index) throws DuplicateMarkingException {
+			if (!todo_list.get(task_index).isDone) {
+				throw new DuplicateMarkingException(ui.indicateDuplicatedUnmarkedTask());
+			} else {
+				ui.showLine();
+				System.out.println(ui.indicateUnmarkedTask());
+				todo_list.get(task_index).isDone = false;
+				// Persist saving input after every task unmarking
+				storage.saveTasks(todo_list.returnAllTasks());
+			}
+		}
+
+		private static void checkDuplicateMark(int task_index) throws DuplicateMarkingException {
+			if (todo_list.get(task_index).isDone) {
+				throw new DuplicateMarkingException(ui.indicateDuplicatedMarkedTask());
+			} else {
+				ui.showLine();
+				System.out.println(ui.indicateMarkedTask());
+				todo_list.get(task_index).isDone = true;
+				// Persist saving input after every task marking
+				storage.saveTasks(todo_list.returnAllTasks());
+			}
+		}
+
+		private static void checkCorrectNumArgs(String echo_word) throws NumArgsException {
+			if (Parser.getNumUserInput(echo_word) == 1) {
+				throw new NumArgsException(ui.missinlistgIndexError());
+			} else if (Parser.getNumUserInput(echo_word) > 2) {
+				throw new NumArgsException(ui.excessiveInputError());
 			}
 		}
 	}
-
-	private static void deleteTask(String echo_word, ArrayList<Task> todo_list) {
-		try {
-			checkCorrectNumArgs(echo_word);
-			checkEmptyList(todo_list);
-
-			int task_index = Integer.parseInt(echo_word.split(" ")[1]) - 1;
-
-			checkOutOfBounds(todo_list, task_index);
-
-			tab();
-			System.out.println(INDENT + "Awh, sad to see your task go away :(");
-			System.out.println(INDENT + " " + todo_list.get(task_index));
-			todo_list.remove(task_index);
-			System.out.println(INDENT + "One less task... You have " + todo_list.size() + " tasks left!");
-			tab();
-		} catch (EmptyListException | NumArgsException | IndexOutOfBoundsException e) {
-			tab();
-			System.out.println(e.getMessage());
-			tab();
-		}
-	}
-	
-	private static ArrayList<Task> loadTasks() {
-		ArrayList<Task> tasks = new ArrayList<>();
-		try {
-			File file = new File(LIST_DATA_FILE_PATH);
-			if (!file.exists()) {
-				return tasks;
-			}
-
-			Scanner sc = new Scanner(file);
-
-			while (sc.hasNextLine()) {
-				String line = sc.nextLine();
-				Task t = parseTask(line);
-				if (t != null) {
-					tasks.add(t);
-				}
-			}
-			
-			sc.close();
-		} catch (IOException e) {
-			System.out.println("Error loading tasks: " + e.getMessage());
-		}
-		return tasks;
-	}
-
-	private static Task parseTask(String line) {
-		try {
-			// Do trimming due to spaces in between "|"
-			// E.g. T | 1 | read book
-			String[] seg = line.split("\\|");
-			String task_type = seg[0].trim();
-			boolean isDone = seg[1].trim().equals("1");
-
-			switch (task_type) {
-			case "T":
-				Task todo = new Todo(seg[2].trim());
-				todo.isDone = isDone;
-				return todo;
-			case "D":
-				Task deadline = new Deadline(seg[2].trim(), seg[3].trim());
-				deadline.isDone = isDone;
-				return deadline;
-			case "E":
-				Task event = new Event(seg[2].trim(), seg[3].trim(), seg[4].trim());
-				event.isDone = isDone;
-				return event;
-			}
-		} catch (Exception e) {
-			System.out.println("Ignoring corrupted line: " + line);
-			return null;
-		}
-		return null;
-	}
-
-	private static void saveTasks(ArrayList<Task> todo_list) {
-		try {
-			File dir = new File("./data");
-			if (!dir.exists()) {
-				// Checks if directory "./data" is present
-				if (!dir.mkdirs()) {
-					System.out.println("Failed to create directories: " + dir.getAbsolutePath());
-					return;
-				}
-			}
-
-			FileWriter fw = new FileWriter(LIST_DATA_FILE_PATH);
-			for (Task task : todo_list) {
-				// Write in line by line from ArrayList into data file, ensures persistence
-				fw.write(task.toSaveFormat() + System.lineSeparator());
-			}
-			fw.close();
-		} catch (IOException e) {
-			System.out.println("Error saving tasks: " + e.getMessage());
-		}
-	}
-
-	private static void tab() {
-		System.out.println(TAB);
-	}
-
-	public static void listTasks(ArrayList<Task> todo_list) {
-		try {
-			checkEmptyList(todo_list);
-			printList(todo_list);
-			tab();
-		} catch (EmptyListException e) {
-			System.out.println(MSG_EMPTY_INPUT);
-			tab();
-		}
-	}
-
-	public static void handleMarking(String echo_word, ArrayList<Task> todo_list) {
-		try {
-			// Ensures number of args == 2
-			checkCorrectNumArgs(echo_word);
-
-			// Catches if user tries to mark/unmark an empty list
-			checkEmptyList(todo_list);
-
-			int task_index = getTaskIndex(echo_word);
-
-			//  Catches if user inputs index out of bounds
-			checkOutOfBounds(todo_list, task_index);
-
-			checkDuplicate(echo_word, todo_list, task_index);
-
-			printTaskBar(todo_list, task_index);
-			tab();
-		} catch (NumArgsException | DuplicateMarkingException | EmptyListException | IndexOutOfBoundsException e) {
-			tab();
-			System.out.println(e.getMessage());
-			tab();
-		}
-	}
-
-	private static void checkOutOfBounds(ArrayList<Task> todoList, int task_index) {
-		if (task_index < 0) {
-			throw new IndexOutOfBoundsException(INDENT + OUT_OF_BOUNDS_TOO_SMALL_PROMPT);
-		}
-		if (task_index >= todoList.size()) {
-			throw new IndexOutOfBoundsException(INDENT + OUT_OF_BOUNDS_TOO_BIG_PROMPT);
-		}
-	}
-
-	protected static void greetUser() {
-		// Greeting user
-		tab();
-		// Logo generated from https://patorjk.com/software/taag/
-		String logo = """
-				 _____                                                                                                      _____\s
-				( ___ )----------------------------------------------------------------------------------------------------( ___ )
-				 |   |                                                                                                      |   |\s
-				 |   |           _____                    _____                    _____                    _____           |   |\s
-				 |   |          /\\    \\                  /\\    \\                  /\\    \\                  /\\    \\          |   |\s
-				 |   |         /::\\    \\                /::\\    \\                /::\\____\\                /::\\    \\         |   |\s
-				 |   |         \\:::\\    \\              /::::\\    \\              /:::/    /               /::::\\    \\        |   |\s
-				 |   |          \\:::\\    \\            /::::::\\    \\            /:::/    /               /::::::\\    \\       |   |\s
-				 |   |           \\:::\\    \\          /:::/\\:::\\    \\          /:::/    /               /:::/\\:::\\    \\      |   |\s
-				 |   |            \\:::\\    \\        /:::/__\\:::\\    \\        /:::/    /               /:::/__\\:::\\    \\     |   |\s
-				 |   |             \\:::\\    \\      /::::\\   \\:::\\    \\      /:::/    /                \\:::\\   \\:::\\    \\    |   |\s
-				 |   |              \\:::\\    \\    /::::::\\   \\:::\\    \\    /:::/    /      _____    ___\\:::\\   \\:::\\    \\   |   |\s
-				 |   |               \\:::\\    \\  /:::/\\:::\\   \\:::\\    \\  /:::/____/      /\\    \\  /\\   \\:::\\   \\:::\\    \\  |   |\s
-				 |   | _______________\\:::\\____\\/:::/__\\:::\\   \\:::\\____\\|:::|    /      /::\\____\\/::\\   \\:::\\   \\:::\\____\\ |   |\s
-				 |   | \\::::::::::::::::::/    /\\:::\\   \\:::\\   \\::/    /|:::|____\\     /:::/    /\\:::\\   \\:::\\   \\::/    / |   |\s
-				 |   |  \\::::::::::::::::/____/  \\:::\\   \\:::\\   \\/____/  \\:::\\    \\   /:::/    /  \\:::\\   \\:::\\   \\/____/  |   |\s
-				 |   |   \\:::\\~~~~\\~~~~~~         \\:::\\   \\:::\\    \\       \\:::\\    \\ /:::/    /    \\:::\\   \\:::\\    \\      |   |\s
-				 |   |    \\:::\\    \\               \\:::\\   \\:::\\____\\       \\:::\\    /:::/    /      \\:::\\   \\:::\\____\\     |   |\s
-				 |   |     \\:::\\    \\               \\:::\\   \\::/    /        \\:::\\__/:::/    /        \\:::\\  /:::/    /     |   |\s
-				 |   |      \\:::\\    \\               \\:::\\   \\/____/          \\::::::::/    /          \\:::\\/:::/    /      |   |\s
-				 |   |       \\:::\\    \\               \\:::\\    \\               \\::::::/    /            \\::::::/    /       |   |\s
-				 |   |        \\:::\\____\\               \\:::\\____\\               \\::::/    /              \\::::/    /        |   |\s
-				 |   |         \\::/    /                \\::/    /                \\::/____/                \\::/    /         |   |\s
-				 |   |          \\/____/                  \\/____/                  ~~                       \\/____/          |   |\s
-				 |___|                                                                                                      |___|\s
-				(_____)----------------------------------------------------------------------------------------------------(_____)""";
-		System.out.println(INDENT + "Hey there human (I hope you are...)! I'm ZEUSBot - your unconventionally helpful sidekick!" + logo);
-		System.out.println(INDENT + "What idea, plan or meme do you have on mind today?");
-		tab();
-		tab();
-	}
-
-	private static void checkDuplicate(String echo_word, ArrayList<Task> todo_list, int task_index) throws DuplicateMarkingException {
-		// Checking for duplicate marking or unmarking
-		if (echo_word.startsWith("mark")) {
-			checkDuplicateMark(todo_list, task_index);
-		} else {
-			checkDuplicateUnmark(todo_list, task_index);
-		}
-	}
-
-	private static int getTaskIndex(String echo_word) {
-		return parseInt(echo_word.split(" ")[1]) - 1;
-	}
-
-	public static void addTask(String echo_word, ArrayList<Task> todo_list) {
-		tab();
-		String[] seg = echo_word.split(" ", 2);
-		String action = seg[0];
-
-		Task t;
-
-		// Set task t subclass based on action
-		switch (action) {
-		case "todo":
-			t = new Todo(seg[1]);
-			break;
-		case "deadline":
-			String[] deadlineParts = seg[1].split(" /by ");
-			t = new Deadline(deadlineParts[0], deadlineParts[1]);
-			break;
-		case "event":
-			String[] eventParts = seg[1].split(" /from | /to ");
-			t = new Event(eventParts[0], eventParts[1], eventParts[2]);
-			break;
-		default:
-			System.out.println(INDENT + "Invalid action!");
-			tab();
-			return;
-		}
-
-		todo_list.add(t);
-		System.out.println(INDENT + "Got it. I've added this task:");
-		System.out.println(INDENT + " " + t);
-		System.out.println(INDENT + "Now you have " + todo_list.size() + " tasks in this list.");
-		tab();
-	}
-
-	public static void sayByeToUser() {
-		tab();
-		System.out.println(MSG_BYE);
-		tab();
-	}
-
-	private static void printList(ArrayList<Task> todo_list) {
-		int counter = 1;
-		tab();
-		System.out.println(INDENT + "Here are the tasks in your list:");
-		for (Task task : todo_list) {
-			System.out.println(INDENT + counter + "." + task.toString());
-			counter++;
-		}
-	}
-
-	private static void checkEmptyList(ArrayList<Task> todo_list) throws EmptyListException {
-		if (todo_list.isEmpty()) {
-			throw new EmptyListException(INDENT + EMPTY_LIST_PROMPT);
-		}
-	}
-
-	private static void printTaskBar(ArrayList<Task> todo_list, int task_index) {
-		String string = todo_list.get(task_index).toString();
-		System.out.println(string);
-	}
-
-	private static void checkDuplicateUnmark(ArrayList<Task> todo_list, int task_index) throws DuplicateMarkingException {
-		if (!todo_list.get(task_index).isDone) {
-			throw new DuplicateMarkingException(INDENT + MSG_DUPLICATE_UNMARK);
-		} else {
-			tab();
-			System.out.println(INDENT + MSG_UNMARK);
-			todo_list.get(task_index).isDone = false;
-			// Persist saving input after every task unmarking
-			saveTasks(todo_list);
-			tab();
-		}
-	}
-
-	private static void checkDuplicateMark(ArrayList<Task> todo_list, int task_index) throws DuplicateMarkingException {
-		if (todo_list.get(task_index).isDone) {
-			throw new DuplicateMarkingException(INDENT + MSG_DUPLICATE_MARK);
-		} else {
-			tab();
-			System.out.println(INDENT + MSG_MARK);
-			todo_list.get(task_index).isDone = true;
-			// Persist saving input after every task marking
-			saveTasks(todo_list);
-			tab();
-		}
-	}
-
-	private static void checkCorrectNumArgs(String echo_word) throws NumArgsException {
-		if (echo_word.split(" ").length == 1) {
-			throw new NumArgsException(INDENT + MISSING_INDEX_PROMPT);
-		} else if (echo_word.split(" ").length > 2) {
-			throw new NumArgsException(INDENT + EXCESSIVE_INPUT_ARGS_PROMPT);
-		}
-	}
-}
