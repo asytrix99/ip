@@ -9,7 +9,10 @@
 	import zeus.exceptions.NumArgsException;
 	import zeus.tasks.Task;
 
+	import java.util.ArrayList;
+
 	public class ZeusBot {
+
 
 		private static StorageFile storage;
 		private static TaskList todo_list;
@@ -50,6 +53,9 @@
 					case "list":
 						listTasks();
 						break;
+					case "find":
+						findTask(input);
+						break;
 					default:
 						addTask(input, command);
 						storage.saveTasks(todo_list.returnAllTasks());
@@ -64,11 +70,11 @@
 			new ZeusBot("./data/zeusbot.txt").run();
 		}
 
-		public static void deleteTask(String echo_word) {
+		public static void deleteTask(String userInput) {
 			try {
-				checkCorrectNumArgs(echo_word);
+				checkCorrectNumArgs(userInput);
 				checkEmptyList();
-				int task_index = Parser.getTaskIndex(echo_word);
+				int task_index = Parser.getTaskIndex(userInput);
 				checkOutOfBounds(task_index);
 
 				ui.showTaskDeleted(todo_list.returnAllTasks(), task_index);
@@ -85,6 +91,23 @@
 				ui.printList(todo_list.returnAllTasks());
 				ui.showLine();
 			} catch (EmptyListException e) {
+				ui.showExceptionError(e.getMessage());
+			}
+		}
+
+		public static void findTask(String userInput) {
+			try {
+				checkCorrectNumArgs(userInput);
+				checkEmptyList();
+				String keyWord = Parser.getKeyword(userInput);
+				ArrayList<Task> filteredList = todo_list.getFilteredList(keyWord, todo_list);
+				if (filteredList.isEmpty()) {
+					ui.showNoSuchKeyword();
+					return;
+				}
+				ui.printList(filteredList);
+				ui.showLine();
+			} catch (EmptyListException | NumArgsException e) {
 				ui.showExceptionError(e.getMessage());
 			}
 		}
@@ -180,7 +203,7 @@
 
 		private static void checkCorrectNumArgs(String echo_word) throws NumArgsException {
 			if (Parser.getNumUserInput(echo_word) == 1) {
-				throw new NumArgsException(ui.missinlistgIndexError());
+				throw new NumArgsException(ui.missingIndexError());
 			} else if (Parser.getNumUserInput(echo_word) > 2) {
 				throw new NumArgsException(ui.excessiveInputError());
 			}

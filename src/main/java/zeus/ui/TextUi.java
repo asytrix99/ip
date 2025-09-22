@@ -19,6 +19,7 @@ public class TextUi {
 	public final String OUT_OF_BOUNDS_TOO_SMALL_PROMPT = "Your query is too SMALL for your current list :/ ";
 	public final String MISSING_INDEX_PROMPT = "What are you even referring to? Add an index!";
 	public final String EXCESSIVE_INPUT_ARGS_PROMPT = "One task at a time my friend! Input only one digit~";
+	public final String NO_SUCH_KEYWORD_PROMPT = "That's just a magic word! No such task in your list dear...";
 
 	public void showLine() {
 		System.out.println(LINE);
@@ -154,6 +155,12 @@ public class TextUi {
 
 	public void showInvalidCommand() {
 		System.out.println(showIndent() + "Invalid action!");
+		showLine();
+	}
+
+	public void showNoSuchKeyword() {
+		showLine();
+		System.out.println(showIndent() + NO_SUCH_KEYWORD_PROMPT);
 		showLine();
 	}
 }

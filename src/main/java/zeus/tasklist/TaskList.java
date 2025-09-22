@@ -7,6 +7,8 @@ import zeus.tasks.Todo;
 
 import java.util.ArrayList;
 
+import static java.util.stream.Collectors.toCollection;
+
 public class TaskList {
 
 	private final ArrayList<Task> todo_list;
@@ -16,6 +18,12 @@ public class TaskList {
 	}
 	public TaskList(ArrayList<Task> loadedTasks) {
 		this.todo_list = loadedTasks;
+	}
+
+	public ArrayList<Task> getFilteredList(String keyWord, TaskList todo_list) {
+		return todo_list.returnAllTasks().stream()
+				.filter((task) -> task.description.contains(keyWord))
+				.collect(toCollection(ArrayList<Task>::new));
 	}
 
 	public Task addTodo(String description) {

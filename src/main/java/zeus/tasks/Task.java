@@ -1,7 +1,7 @@
 package zeus.tasks;
 
 public abstract class Task {
-	protected String description;
+	public String description;
 	public boolean isDone;
 
 	public Task(String description) {
