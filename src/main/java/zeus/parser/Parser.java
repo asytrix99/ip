@@ -30,4 +30,7 @@ public class Parser {
 		return userInput.split(" ", 2)[1].split(" /from | /to ");
 	}
 
+	public static String getKeyword(String userInput) {
+		return userInput.split(" ", 2)[1];
+	}
 }

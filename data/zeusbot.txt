@@ -1,1 +1,6 @@
-E | 0 | ief | wopej | weoijf
+T | 1 | oiwjd
+T | 0 | woig ioj
+T | 1 | paper
+T | 0 | book
+T | 0 | book
+T | 0 | paper
