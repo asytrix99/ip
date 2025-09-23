@@ -11,13 +11,29 @@
 
 	import java.util.ArrayList;
 
+	/**
+	 * Main class for the ZeusBot application
+	 * <p>
+	 * ZeusBot is a task handling chatbot that allows users to create,
+	 * list, find, mark/unmark, and delete tasks via text commands.
+	 * Tasks are saved in a text file in between usage of the chatbot.
+	 *
+	 * @author Andrew Gan
+	 * @version 1.0
+	 * @since 2025-09-22
+	 */
 	public class ZeusBot {
-
 
 		private static StorageFile storage;
 		private static TaskList todo_list;
 		private static TextUi ui;
 
+		/**
+		 * Initiates a new ZeusBot instance and loads in tasks from the file path provided.
+		 * Empty list of tasks is initialised if tasks cannot be loaded.
+		 *
+		 * @param filePath The path to the text file used for saving and loading tasks.
+		 */
 		public ZeusBot(String filePath) {
 			ui = new TextUi();
 			storage = new StorageFile(filePath);
@@ -29,6 +45,10 @@
 			}
 		}
 
+		/**
+		 * In charge of running the main executional loop of the chatbot.
+		 * In loop, takes in user input and executes commands until "bye" is entered.
+		 */
 		public void run() {
 			ui.showGreeting();
 			while (true) {
@@ -66,10 +86,20 @@
 			}
 		}
 
+		/**
+		 * Application program's entry point.
+		 *
+		 * @param args Command-line arguments (not used).
+		 */
 		public static void main(String[] args) {
 			new ZeusBot("./data/zeusbot.txt").run();
 		}
 
+		/**
+		 * Deletes a task from list of tasks according to user input.
+		 *
+		 * @param userInput The entire input by user, containing the delete command and index.
+		 */
 		public static void deleteTask(String userInput) {
 			try {
 				checkCorrectNumArgs(userInput);
@@ -85,6 +115,9 @@
 			}
 		}
 
+		/**
+		 * Prints out all tasks currently existing in the task list.
+		 */
 		public static void listTasks() {
 			try {
 				checkEmptyList();
@@ -95,6 +128,11 @@
 			}
 		}
 
+		/**
+		 * Searches and displays tasks that contain the provided keyword.
+		 *
+		 * @param userInput The full user input with the find command and keyword.
+		 */
 		public static void findTask(String userInput) {
 			try {
 				checkCorrectNumArgs(userInput);
@@ -112,6 +150,12 @@
 			}
 		}
 
+
+		/**
+		 * Takes care of marking or unmarking of a task as completed.
+		 *
+		 * @param echo_word The full user input with the mark/unmark command and index.
+		 */
 		public static void handleMarking(String echo_word) {
 			try {
 				// Ensures number of args == 2
@@ -129,6 +173,12 @@
 			}
 		}
 
+		/**
+		 * Checks if index provided is within bounds of the task list.
+		 *
+		 * @param task_index The task index to check.
+		 * @throws IndexOutOfBoundsException If index < 0 or index >= list size.
+		 */
 		private static void checkOutOfBounds(int task_index) {
 			if (task_index < 0) {
 				throw new IndexOutOfBoundsException(ui.outOfBoundsInputErrorTooSmall());
@@ -138,6 +188,13 @@
 			}
 		}
 
+		/**
+		 * Checks for duplicate marking/unmarking tries and updates the task as required.
+		 * Wrapper function for individual mark/unmarking check functions.
+		 * @param echo_word The full user input containing "mark"/"unmark".
+		 * @param task_index The index of the task to be marked/unmarked.
+		 * @throws DuplicateMarkingException If task's isDone state is already True.
+		 */
 		private static void checkDuplicate(String echo_word, int task_index) throws DuplicateMarkingException {
 			// Checking for duplicate marking or unmarking
 			if (echo_word.startsWith("mark")) {
@@ -147,6 +204,12 @@
 			}
 		}
 
+		/**
+		 * Based on command type, adds a new task to the list of tasks.
+		 *
+		 * @param echo_word The full user input with the task description.
+		 * @param command The command type (e.g., "todo, "deadline", "event").
+		 */
 		public static void addTask(String echo_word, String command) {
 			ui.showLine();
 			Task t;
@@ -171,12 +234,23 @@
 			ui.showTaskAdded(t, todo_list.size());
 		}
 
+		/**
+		 * Checks if the task list is empty.
+		 *
+		 * @throws EmptyListException If task list is empty.
+		 */
 		private static void checkEmptyList() throws EmptyListException {
 			if (todo_list.isEmpty()) {
 				throw new EmptyListException(ui.emptyInputError());
 			}
 		}
 
+		/**
+		 * Checks for duplicate unmark tries and updates the tasks as required.
+		 *
+		 * @param task_index The index of the task.
+		 * @throws DuplicateMarkingException If task is already unmarked.
+		 */
 		private static void checkDuplicateUnmark(int task_index) throws DuplicateMarkingException {
 			if (!todo_list.get(task_index).isDone) {
 				throw new DuplicateMarkingException(ui.indicateDuplicatedUnmarkedTask());
@@ -189,6 +263,12 @@
 			}
 		}
 
+		/**
+		 * Checks for duplicate mark tries and updates the tasks as required.
+		 *
+		 * @param task_index The index of the task.
+		 * @throws DuplicateMarkingException If task is already marked.
+		 */
 		private static void checkDuplicateMark(int task_index) throws DuplicateMarkingException {
 			if (todo_list.get(task_index).isDone) {
 				throw new DuplicateMarkingException(ui.indicateDuplicatedMarkedTask());
@@ -201,6 +281,12 @@
 			}
 		}
 
+		/**
+		 * Confirms if user has provided correct number of arguments of strictly 2.
+		 *
+		 * @param echo_word The full user input.
+		 * @throws NumArgsException If number of arguments provided == 1 or > 2.
+		 */
 		private static void checkCorrectNumArgs(String echo_word) throws NumArgsException {
 			if (Parser.getNumUserInput(echo_word) == 1) {
 				throw new NumArgsException(ui.missingIndexError());

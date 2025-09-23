@@ -5,6 +5,12 @@ import zeus.tasks.Task;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * Controls all user interaction for ZeusBot
+ * <p>
+ * Contains methods for displaying messages, prompts, todo list,
+ * and error messages.
+ */
 public class TextUi {
 	public final String INDENT = "\t";
 	public final String LINE = INDENT + "____________________________________________________________";
@@ -21,14 +27,25 @@ public class TextUi {
 	public final String EXCESSIVE_INPUT_ARGS_PROMPT = "One task at a time my friend! Input only one digit~";
 	public final String NO_SUCH_KEYWORD_PROMPT = "That's just a magic word! No such task in your list dear...";
 
+	/**
+	 * Prints out a horizontal diver line.
+	 */
 	public void showLine() {
 		System.out.println(LINE);
 	}
 
+	/**
+	 * Returns fixed indentation string used when messages are printed.
+	 *
+	 * @return The indentation string.
+	 */
 	public String showIndent() {
 		return INDENT;
 	}
 
+	/**
+	 * Displays greeting message and ZeusBot logo using ASCII art at program start.
+	 */
 	public void showGreeting() {
 		showLine();
 		// Logo generated from https://patorjk.com/software/taag/
@@ -65,12 +82,21 @@ public class TextUi {
 		showLine();
 	}
 
+	/**
+	 * Displays goodbye message when program exits.
+	 */
 	public void showBye() {
 		showLine();
 		System.out.println(MSG_BYE);
 		showLine();
 	}
 
+	/**
+	 * Displays message when adding a new task.
+	 *
+	 * @param task The task that was added.
+	 * @param size The updated total number of tasks in the list.
+	 */
 	public void showTaskAdded(Task task, int size) {
 		System.out.println(INDENT + "Got it. I've added this task:");
 		System.out.println(INDENT + " " + task);
@@ -78,57 +104,85 @@ public class TextUi {
 		showLine();
 	}
 
+	/**
+	 * Takes in the next line of input from standard input.
+	 *
+	 * @return The full line of input by user.
+	 */
 	public String readCommand() {
 		Scanner sc = new Scanner(System.in);
 		return sc.nextLine();
 	}
 
+	/**
+	 * Displays a message when no input entered.
+	 */
 	public void showEmptyInput() {
 		System.out.println(MSG_EMPTY_INPUT);
 		showLine();
 	}
 
+	/** @return Error message for missing index in the input */
 	public String missingIndexError() {
 		return showIndent() + MISSING_INDEX_PROMPT;
 	}
 
+	/** @return Error message for too many arguments provided. */
 	public String excessiveInputError() {
 		return showIndent() + EXCESSIVE_INPUT_ARGS_PROMPT;
 	}
 
+	/** @return Error message for empty todo list */
 	public String emptyInputError() {
 		return showIndent() + EMPTY_LIST_PROMPT;
 	}
 
+	/** @return Error message when input index less than allowed. */
 	public String outOfBoundsInputErrorTooSmall() {
 		return showIndent() + OUT_OF_BOUNDS_TOO_SMALL_PROMPT;
 	}
-
+	/** @return Error message when input index more than allowed. */
 	public String outOfBoundsInputErrorTooBig() {
 		return showIndent() + OUT_OF_BOUNDS_TOO_BIG_PROMPT;
 	}
 
+	/** @return Message shown when marking an already marked task is attempted. */
 	public String indicateDuplicatedMarkedTask() {
 		return MSG_DUPLICATE_MARK;
 	}
 
+	/** @return Message shown when task marked successfully. */
 	public String indicateMarkedTask() {
 		return MSG_MARK;
 	}
 
+	/** @return Message shown when unmarking an already unmarked task is attempted. */
 	public String indicateDuplicatedUnmarkedTask() {
 		return showIndent() + MSG_DUPLICATE_UNMARK;
 	}
 
+	/** @return Message shown when task unmarked successfully. */
 	public String indicateUnmarkedTask() {
 		return showIndent() + MSG_UNMARK;
 	}
 
+	/**
+	 * Prints out a single task from todo list according to index given.\
+	 *
+	 * @param todo_list The list of tasks.
+	 * @param task_index The given index of task to print.
+	 */
 	public void printTaskBar(ArrayList<Task> todo_list, int task_index) {
 		String string = todo_list.get(task_index).toString();
 		System.out.println(string);
 	}
 
+	/**
+	 * Displays a message when a task is removed from todo list.
+	 *
+	 * @param todo_list The list of the tasks.
+	 * @param task_index The given index of task to print.
+	 */
 	public void showTaskDeleted(ArrayList<Task> todo_list, int task_index) {
 		showLine();
 		System.out.println(showIndent() + "Awh, sad to see your task go away :(");
@@ -137,6 +191,11 @@ public class TextUi {
 		showLine();
 	}
 
+	/**
+	 * Prints out all tasks currently in the todo list.
+	 *
+	 * @param todo_list The list of the tasks.
+	 */
 	public void printList(ArrayList<Task> todo_list) {
 		int counter = 1;
 		showLine();
@@ -147,17 +206,28 @@ public class TextUi {
 		}
 	}
 
+	/**
+	 * Displays an error message from exception.
+	 *
+	 * @param message The error message to display.
+	 */
 	public void showExceptionError(String message) {
 		showLine();
 		System.out.println(message);
 		showLine();
 	}
 
+	/**
+	 * Displays a message when entering an invalid command.
+	 */
 	public void showInvalidCommand() {
 		System.out.println(showIndent() + "Invalid action!");
 		showLine();
 	}
 
+	/**
+	 * Displays a message when entered keyword does not exist.
+	 */
 	public void showNoSuchKeyword() {
 		showLine();
 		System.out.println(showIndent() + NO_SUCH_KEYWORD_PROMPT);
