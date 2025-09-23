@@ -11,13 +11,34 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * Takes charge in persistent storage of tasks using a text file for ZeusBot
+ * <p>
+ * Offers methods to load tasks from and save them back into a text file.
+ * Tasks are formatted into a pre-defined format before the actual saving or loading process.
+ * Implementations of formatting are found in {@link Task#toSaveFormat()}.
+ */
 public class StorageFile {
 	private static String filePath;
 
+	/**
+	 * Creates a new {@code StorageFile} with given file path.
+	 *
+	 * @param filePath The storage file path.
+	 */
 	public StorageFile(String filePath) {
 		StorageFile.filePath = filePath;
 	}
 
+	/**
+	 * Loads tasks from storage text file into local memory.
+	 * <p>
+	 * Each line in file is parsed into a {@code Task} object
+	 * of type {@code Todo}, {@code Deadline} or {@code Event}.
+	 * Corrupted or invalid lines are ignored.
+	 *
+	 * @return An {@code ArrayList<Task>} with all successfully loaded tasks.
+	 */
 	public ArrayList<Task> loadTasks() {
 		ArrayList<Task> tasks = new ArrayList<>();
 		try {
@@ -43,6 +64,18 @@ public class StorageFile {
 		return tasks;
 	}
 
+	/**
+	 * Parses a line from storage text file into a {@code Task} object.
+	 * <p>
+	 * Example:
+	 * <pre>
+	 *     "T | 1 | read book" is parsed as type {@code Todo}, {@code isDone} is {@code True}
+	 *     and {@code description} is "read book"
+	 * </pre>
+	 *
+	 * @param line The line from storage text file.
+	 * @return The parsed in {@code Task} or {@code null} for ignored lines.
+	 */
 	private Task parseTask(String line) {
 		try {
 			// Do trimming due to spaces in between "|"
@@ -72,6 +105,14 @@ public class StorageFile {
 		return null;
 	}
 
+	/**
+	 * Saves all tasks to storage text file.
+	 * Initialises the {@code ./data} directory if it does not exist.
+	 * Each line in file is written into a textual format returned by
+	 * {@link Task#toSaveFormat()}.
+	 *
+	 * @param todo_list The list of tasks to save.
+	 */
 	public void saveTasks(ArrayList<Task> todo_list) {
 		try {
 			File dir = new File("./data");
