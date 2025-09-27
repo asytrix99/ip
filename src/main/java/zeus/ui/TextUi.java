@@ -265,7 +265,7 @@ public class TextUi {
 			showLine();
 			return false;
 		} else if (toDate.isBefore(LocalDate.now())) {
-			System.out.println(showIndent() + "You can't go back to the future! Your START date is too far back :/");
+			System.out.println(showIndent() + "You can't go back to the future! Your END date is too far back :/");
 			showLine();
 			return false;
 		}
