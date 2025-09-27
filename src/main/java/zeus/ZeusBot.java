@@ -9,6 +9,8 @@
 	import zeus.exceptions.NumArgsException;
 	import zeus.tasks.Task;
 
+	import java.time.LocalDate;
+	import java.time.format.DateTimeParseException;
 	import java.util.ArrayList;
 
 	/**
@@ -220,11 +222,37 @@
 				break;
 			case "deadline":
 				String[] deadlineParts = Parser.getDeadlineParts(echo_word);
-				t = todo_list.addDeadline(deadlineParts[0], deadlineParts[1]);
+				LocalDate deadlineParsed;
+				try {
+					deadlineParsed = Parser.parseDate(deadlineParts[1]);
+				} catch (DateTimeParseException e) {
+					ui.showExceptionError(ui.showIndent() + "Invalid date format! You've gotta use yyyy-MM-dd...");
+					return;
+				}
+				if (!ui.checkValidDate(deadlineParsed)) {
+					ui.showLine();
+					return;
+				}
+				String deadlineFormatted = Parser.formatDate(deadlineParsed);
+				t = todo_list.addDeadline(deadlineParts[0], deadlineFormatted);
 				break;
 			case "event":
-				String [] eventParts = Parser.getEventParts(echo_word);
-				t = todo_list.addEvent(eventParts[0], eventParts[1], eventParts[2]);
+				String[] eventParts = Parser.getEventParts(echo_word);
+				LocalDate fromDate;
+				LocalDate toDate;
+				try {
+					fromDate = Parser.parseDate(eventParts[1]);
+					toDate = Parser.parseDate(eventParts[2]);
+				} catch (DateTimeParseException e) {
+					ui.showExceptionError(ui.showIndent() + "Invalid date format! You've gotta use yyyy-MM-dd...");
+					return;
+				}
+				if (!ui.checkValidEventDate(fromDate, toDate)) {
+					return;
+				}
+				String fromFormatted = Parser.formatDate(fromDate);
+				String toFormatted = Parser.formatDate(toDate);
+				t = todo_list.addEvent(eventParts[0], fromFormatted, toFormatted);
 				break;
 			default:
 				ui.showInvalidCommand();

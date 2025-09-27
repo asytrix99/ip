@@ -2,6 +2,7 @@ package zeus.ui;
 
 import zeus.tasks.Task;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -212,7 +213,6 @@ public class TextUi {
 	 * @param message The error message to display.
 	 */
 	public void showExceptionError(String message) {
-		showLine();
 		System.out.println(message);
 		showLine();
 	}
@@ -232,5 +232,50 @@ public class TextUi {
 		showLine();
 		System.out.println(showIndent() + NO_SUCH_KEYWORD_PROMPT);
 		showLine();
+	}
+
+	/**
+	 * Helps to validate a single input date, specifically used for deadlines.
+	 *
+	 * @param deadlineParsed The {@code LocalDate} to validate.
+	 * @return {@code false} if date is not in before today, else {@code true}.
+	 */
+	public boolean checkValidDate(LocalDate deadlineParsed) {
+		if (deadlineParsed.isBefore(LocalDate.now())) {
+			System.out.println(showIndent() + "You can't go back to the future! Date input is too far back :/");
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Helps to validate the start and end dates of event input.
+	 *
+	 * @param fromDate The {@code LocalDate} showing the event's start date.
+	 * @param toDate The {@code LocalDate} showing the event's end date.
+	 * @return {@code true} if both dates are valid and logically consistent, else {@code false}.
+	 */
+	public boolean checkValidEventDate(LocalDate fromDate, LocalDate toDate) {
+		if (fromDate.isBefore(LocalDate.now()) && toDate.isBefore(LocalDate.now())) {
+			System.out.println(showIndent() + "You can't go back to the future! Both START and END dates are too far back :/");
+			showLine();
+			return false;
+		} else if (fromDate.isBefore(LocalDate.now())) {
+			System.out.println(showIndent() + "You can't go back to the future! Your START date is too far back :/");
+			showLine();
+			return false;
+		} else if (toDate.isBefore(LocalDate.now())) {
+			System.out.println(showIndent() + "You can't go back to the future! Your START date is too far back :/");
+			showLine();
+			return false;
+		}
+
+		if (fromDate.isAfter(toDate)) {
+			System.out.println(showIndent() + "You can't be completing your event before you even started it silly!");
+			showLine();
+			return false;
+		}
+		showLine();
+		return true;
 	}
 }
