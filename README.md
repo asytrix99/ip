@@ -20,4 +20,4 @@ ZeusBot supports you in managing tasks (todos, deadlines and events) through the
 ### Getting Started
 
 --------------------------------------------------------------------------------------------------------------------
-Kindly refer to the [User Guide]() for detailed instructions on how to install and use ZeusBot.
+Kindly refer to the [User Guide](https://asytrix99.github.io/ip/) for detailed instructions on how to install and use ZeusBot.
