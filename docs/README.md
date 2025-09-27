@@ -6,6 +6,22 @@ ZeusBot is a **Command Line Interface-based (CLI-based) chatbot** that will be y
 
 --------------------------------------------------------------------------------------------------------------------
 
+## Content Log
+* [Quick Start](#quick-start)
+* [Features](#features)
+  * [Enumerating all tasks](#enumerating-all-tasks-list)
+  * [Adding a todo task](#adding-a-todo-task-todo)
+  * [Adding a deadline task](#adding-a-deadline-task-deadline)
+  * [Adding an event task](#adding-an-event-task-event)
+  * [Enumerating tasks with keyword](#enumerating-tasks-with-keyword-find)
+  * [Marking a task as completed](#marking-a-task-as-completed-mark)
+  * [Unmarking a task as completed](#unmarking-a-task-as-completed-unmark)
+  * [Removing a task](#removing-a-task-delete)
+  * [Bidding farewell to user](#bidding-farewell-to-user-bye)
+  * [Saving the data](#saving-the-data)
+  * [Editing the data file](#editing-the-data-file)
+
+--------------------------------------------------------------------------------------------------------------------
 ## Quick Start
 
 1. Ensure you have Java `17` or above installed in your Computer.<br>
@@ -77,7 +93,7 @@ Format: `deadline DESCRIPTION /by BY`
 Examples:
 * `deadline finish assignment /by 2025-09-27` Adds a task with description `finish assignment` with a due date `27 Sep 2025`.
 
-### Adding a event task: `event`
+### Adding an event task: `event`
 Adds a task with a description, alongside start and end dates.
 
 Format: `event DESCRIPTION /from FROM /to TO`
@@ -141,7 +157,7 @@ Examples:
 * `delete 5` removes task at index 5 and updates the list as shown below.<br>
 ![delete](images/delete.png)
 
-### Bidding farewell to user: 'bye'
+### Bidding farewell to user: `bye`
 Ends current session.
 
 Format: `bye`
