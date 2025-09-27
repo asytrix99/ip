@@ -1,6 +1,8 @@
 package zeus.parser;
 
 import static java.lang.Integer.parseInt;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Offers utility methods for parsing user input
@@ -53,9 +55,34 @@ public class Parser {
 	 *
 	 * @param userInput The full user input string.
 	 * @return The description of the deadline task.
+	 * @throws IllegalArgumentException If input does not match the required number of arguments or specified format.
 	 */
 	public static String[] getDeadlineParts(String userInput) {
-		return userInput.split(" ", 2)[1].split(" /by ");
+		String[] parts = userInput.split(" ", 2)[1].split(" /by ");
+		if (parts.length < 2) {
+			throw new IllegalArgumentException("\tFollow deadline format as follows: deadline <description> /by yyyy-MM-dd");
+		}
+		return parts;
+	}
+
+	/**
+	 * Parses a date string from {@code yyyy-MM-dd} format into a {@code LocalDate}.
+	 *
+	 * @param date A date string that follows the {@code yyyy-MM-dd} format.
+	 * @return The parsed {@code LocalDate}.
+	 */
+	public static LocalDate parseDate(String date) {
+		return LocalDate.parse(date);
+	}
+
+	/**
+	 * Formats a {@code localDate} into a visualised text string in the required {@code MMM d yyy} format.
+	 *
+	 * @param date The {@code localDate} to format.
+	 * @return A final formatted string in the form {@code MMM d yyy} (e.g., "Dec 10 2025").
+	 */
+	public static String formatDate(LocalDate date) {
+		return date.format(DateTimeFormatter.ofPattern("MMM d yyy"));
 	}
 
 	/**
@@ -63,9 +90,15 @@ public class Parser {
 	 *
 	 * @param userInput The full user input string.
 	 * @return The description of the event task.
+	 * @throws IllegalArgumentException If input does not match the required number of arguments or specified format.
 	 */
 	public static String[] getEventParts(String userInput) {
-		return userInput.split(" ", 2)[1].split(" /from | /to ");
+		String withoutCommand = userInput.split(" ", 2)[1];
+		String[] parts = withoutCommand.split(" /from | /to ");
+		if (parts.length < 3) {
+			throw new IllegalArgumentException("\tFollow event format as follows: event <description> /from yyyy-MM-dd /to yyyy-MM-dd");
+		}
+		return parts;
 	}
 
 	/**
