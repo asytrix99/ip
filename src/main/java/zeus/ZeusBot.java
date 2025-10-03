@@ -160,12 +160,9 @@
 		 */
 		public static void handleMarking(String echo_word) {
 			try {
-				// Ensures number of args == 2
 				checkCorrectNumArgs(echo_word);
-				// Catches if user tries to mark/unmark an empty list
 				checkEmptyList();
 				int task_index = Parser.getTaskIndex(echo_word);
-				//  Catches if user inputs index out of bounds
 				checkOutOfBounds(task_index);
 				checkDuplicate(echo_word, task_index);
 				ui.printTaskBar(todo_list.returnAllTasks(), task_index);
@@ -198,7 +195,6 @@
 		 * @throws DuplicateMarkingException If task's isDone state is already True.
 		 */
 		private static void checkDuplicate(String echo_word, int task_index) throws DuplicateMarkingException {
-			// Checking for duplicate marking or unmarking
 			if (echo_word.startsWith("mark")) {
 				checkDuplicateMark(task_index);
 			} else {
@@ -215,7 +211,6 @@
 		public static void addTask(String echo_word, String command) {
 			ui.showLine();
 			Task t;
-			// Set task t subclass based on action
 			switch (command) {
 			case "todo":
 				t = todo_list.addTodo(Parser.getTodoDescription(echo_word));

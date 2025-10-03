@@ -1,36 +1,6 @@
-T | 1 | oiwjd
-T | 0 | woig ioj
-T | 1 | paper
-T | 0 | book
-T | 0 | book
-T | 0 | paper
-D | 0 | book | May 23 2019
-D | 0 | book | May 23 2019
-D | 0 | book | May 23 2019
-D | 0 | book | Aug 31 2025
-D | 0 | book | Sep 30 2025
-D | 0 | book | Sep 28 2025
-D | 0 | book | Sep 27 2025
-E | 0 | Hackathon | Oct 12 2025 | Oct 14 2025
-E | 0 | book | Aug 23 2025 | Aug 25 2025
-E | 0 | Hackathon | Oct 12 2025 | Oct 14 2025
-E | 0 | Hackathon | Oct 12 2025 | Oct 14 2025
-E | 0 | Exam Day | Nov 20 2025 | Nov 20 2025
-E | 0 | New Year Celebration | Dec 31 2025 | Jan 1 2026
-E | 0 | Presentation | Sep 27 2025 | Sep 28 2025
-E | 0 | Presentation | Sep 27 2025 | Sep 28 2025
-E | 0 | Presentation | Sep 27 2025 | Sep 28 2025
-D | 0 | Homework | Dec 1 2025
-D | 0 | Submit report | Sep 27 2025
-E | 0 | Hackathon | Oct 12 2025 | Oct 14 2025
-E | 0 | Exam Day | Nov 20 2025 | Nov 20 2025
-E | 0 | Exam Day | Nov 20 2025 | Nov 20 2025
-E | 0 | New Year Celebration | Dec 31 2025 | Jan 1 2026
-E | 0 | Presentation | Sep 27 2025 | Sep 28 2025
-D | 0 | Submit report | Dec 10 2025
-D | 0 | Pay bills | Sep 27 2025
-E | 0 | Hackathon | Nov 1 2025 | Nov 3 2025
-E | 0 | Exam Week | Sep 27 2025 | Sep 30 2025
-E | 0 | desc | Sep 30 2025 | Sep 30 2025
-D | 0 | desc | Sep 30 2025
-D | 0 | desc | Sep 27 2025
+T | 1 | borrow book
+E | 0 | CS2113 exam | Oct 5 2025 | Oct 6 2025
+D | 1 | do assignment | Oct 3 2025
+T | 0 | call mom
+E | 0 | Hackathon | Oct 7 2025 | Oct 8 2025
+T | 0 | deadline badformat /by 03-10-2025

@@ -78,8 +78,6 @@ public class StorageFile {
 	 */
 	private Task parseTask(String line) {
 		try {
-			// Do trimming due to spaces in between "|"
-			// E.g. T | 1 | read book
 			String[] seg = line.split("\\|");
 			String task_type = seg[0].trim();
 			boolean isDone = seg[1].trim().equals("1");
@@ -117,7 +115,6 @@ public class StorageFile {
 		try {
 			File dir = new File("./data");
 			if (!dir.exists()) {
-				// Checks if directory "./data" is present
 				if (!dir.mkdirs()) {
 					System.out.println("Failed to create directories: " + dir.getAbsolutePath());
 					return;
@@ -126,7 +123,6 @@ public class StorageFile {
 
 			FileWriter fw = new FileWriter(StorageFile.filePath);
 			for (Task task : todo_list) {
-				// Write in line by line from ArrayList into data file, ensures persistence
 				fw.write(task.toSaveFormat() + System.lineSeparator());
 			}
 			fw.close();
